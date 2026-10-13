@@ -1,0 +1,25 @@
+# Guide
+
+@"@voxgig/apidef/model/guide.aontu"
+
+@"./base-guide.aontu"
+
+
+# Segments: the heuristic named entities after response schemas and split
+# one resource across three entities. Merge them back into `segment`.
+guide: entity: {
+  remove_segment_response_success: active: false
+  update_segment_response_success: active: false
+
+  segment: {
+    path: "/segments": {
+      op: create: method: "POST"
+      op: list: method: "GET"
+      op: list: transform: res: "`body.data`"
+    }
+    path: "/segments/{id}": {
+      op: remove: method: "DELETE"
+      op: patch: method: "PATCH"
+    }
+  }
+}
