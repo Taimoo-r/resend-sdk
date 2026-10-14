@@ -41,8 +41,16 @@ first candidate resolves against `.sdk/` rather than `model/`, and is written as
 fine. `test/test.aontu` has the same problem.
 
 - **Workaround:** prefix the nine bare imports with `./`.
-- **Note:** `sdk.aontu` is toolchain-derived, so a resync would undo this. The real fix belongs
-  in aontu's path resolution, or the templates could always emit `./`.
+- **Root cause (corrected after this report was first written):** the bug is not in aontu itself.
+  The `aontu` CLI resolves the same files correctly on Windows. It is in
+  `@tabnas/multisource` 0.5.8 (`dist/resolver/file.js:64`):
+  `const P = null != ctx.meta?.fs ? Path.posix : Path;`. When a caller injects a filesystem, the
+  resolver switches to POSIX path semantics. `@voxgig/model` injects one, and on Windows
+  `Path.posix.resolve('api/api-info.aontu')` gives
+  `/Users/taimo/.../.sdk/api/api-info.aontu`, which is exactly the first search path in the error.
+- **Suggested fix:** take path semantics from an explicit option instead of inferring POSIX from
+  an injected `fs`, and add a Windows end-to-end job that runs `@voxgig/model` with a bare import.
+  Since `sdk.aontu` is toolchain-derived, emitting `./` in the templates would also avoid it.
 
 ### 3. Entity inference splits one resource across many entities
 
